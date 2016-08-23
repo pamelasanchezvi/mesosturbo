@@ -559,12 +559,6 @@ func ParseNode(m *util.MesosAPIResponse, slaveUseMap map[string]*util.Calculated
 		}
 		entityDTO := buildVMEntityDTO(slaveIP, s.Id, s.Name, commoditiesSold)
 		result = append(result, entityDTO)
-
-		// create VM with fake IP
-		arbitraryIP := "10.10.174.87"
-		m.SlaveIdIpMap["arbitrarypmid"] = arbitraryIP
-		entityDTO = buildVMEntityDTO(arbitraryIP, "arbitrarypmid", "physicalMachine", commoditiesSold)
-		result = append(result, entityDTO)
 	}
 	glog.V(4).Infof(" entity DTOs : %d\n", len(result))
 	return result, nil
