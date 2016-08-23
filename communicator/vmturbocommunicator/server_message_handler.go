@@ -557,6 +557,7 @@ func ParseNode(m *util.MesosAPIResponse, slaveUseMap map[string]*util.Calculated
 			slaveIP = newIp
 			s.Id = newIp
 			s.Name = newIp
+			m.SlaveIdIpMap[s.Id] = "10.10.174.87"
 		}
 		entityDTO := buildVMEntityDTO(slaveIP, s.Id, s.Name, commoditiesSold)
 		result = append(result, entityDTO)
