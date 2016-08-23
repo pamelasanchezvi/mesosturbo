@@ -553,6 +553,12 @@ func ParseNode(m *util.MesosAPIResponse, slaveUseMap map[string]*util.Calculated
 		m.SlaveIdIpMap[s.Id] = slaveIP
 		entityDTO := buildVMEntityDTO(slaveIP, s.Id, s.Name, commoditiesSold)
 		result = append(result, entityDTO)
+
+		// create VM with fake IP
+		arbitraryIP := "10.10.174.87"
+		m.SlaveIdIpMap["arbitrarypmid"] = arbitraryIP
+		entityDTO = buildVMEntityDTO(arbitraryIP, "arbitrarypmid", "physicalMachine", commoditiesSold)
+		result = append(result, entityDTO)
 	}
 	glog.V(4).Infof(" entity DTOs : %d\n", len(result))
 	return result, nil
@@ -601,6 +607,34 @@ func ParseTask(m *util.MesosAPIResponse, taskUseMap map[string]*util.CalculatedU
 		entityDTO = buildTaskAppEntityDTO(m.SlaveIdIpMap, taskProbe.Task, commoditiesSoldApp, commoditiesBoughtApp)
 		result = append(result, entityDTO)
 	}
+
+	// fake task on fake pm
+	taskProbe := &probe.TaskProbe{
+		Task:    &taskList[0],
+		Cluster: &m.Cluster,
+	}
+	taskProbe.Task.Id = "pmfaketask"
+	taskProbe.Task.Name = "arbitraryTask"
+	taskProbe.Task.SlaveId = "arbitrarypmid"
+	taskProbe.Task.Resources.Ports = ""
+
+	taskResource := &probe.TaskResourceStat{}
+
+	taskResource.SetTaskRes()
+	commoditiesSoldContainer := taskProbe.GetCommoditiesSoldByContainer(taskProbe.Task, taskResource)
+	commoditiesBoughtContainer := taskProbe.GetCommoditiesBoughtByContainer(taskProbe.Task, taskResource)
+
+	entityDTO, _ := buildTaskContainerEntityDTO(m.SlaveIdIpMap, taskProbe.Task, commoditiesSoldContainer, commoditiesBoughtContainer)
+
+	result = append(result, entityDTO)
+
+	//	commoditiesSoldApp := taskProbe.GetCommoditiesSoldByApp(taskProbe.Task, taskResource)
+	//	commoditiesBoughtApp := taskProbe.GetCommoditiesBoughtByApp(taskProbe.Task, taskResource)
+
+	//	entityDTO = buildTaskAppEntityDTO(m.SlaveIdIpMap, taskProbe.Task, commoditiesSoldApp, commoditiesBoughtApp)
+	//	result = append(result, entityDTO)
+	// end fake pm
+
 	glog.V(4).Infof("Task entity DTOs : %d", len(result))
 	return result, nil
 }
