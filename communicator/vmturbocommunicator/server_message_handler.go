@@ -551,11 +551,11 @@ func ParseNode(m *util.MesosAPIResponse, slaveUseMap map[string]*util.Calculated
 		}
 		slaveIP := util.GetSlaveIP(s)
 		m.SlaveIdIpMap[s.Id] = slaveIP
+		fakeIp := "10.10.174.87"
 		if s.Id == "9cf62963-8ab5-46a3-bc28-c0eb49f442d3-S1" {
-			fakeIp = "10.10.174.87"
 			m.SlaveIdIpMap["9cf62963-8ab5-46a3-bc28-c0eb49f442d3-S1"] = fakeIp
 			s.Name = fakeIp
-			slaveIP = fakeIP
+			slaveIP = fakeIp
 		}
 		entityDTO := buildVMEntityDTO(slaveIP, s.Id, s.Name, commoditiesSold)
 		result = append(result, entityDTO)
@@ -732,6 +732,10 @@ func buildTaskAppEntityDTO(slaveIdIp map[string]string, task *util.Task, commodi
 	appType := task.Name
 
 	ipAddress := slaveIdIp[task.SlaveId] //this.getIPAddress(host, nodeName)
+	if task.SlaveId == "9cf62963-8ab5-46a3-bc28-c0eb49f442d3-S1" {
+		fakeIp := "10.10.174.87"
+		ipAddress = fakeIp
+	}
 
 	appData := &sdk.EntityDTO_ApplicationData{
 		Type:      &appType,
