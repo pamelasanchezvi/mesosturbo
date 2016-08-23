@@ -17,6 +17,13 @@ type TaskResourceStat struct {
 	diskAllocationUsed     float64
 }
 
+func (taskResource *TaskResourceStat) SetTaskRes() {
+	taskResource.cpuAllocationCapacity = float64(1.0)
+	taskResource.cpuAllocationUsed = float64(0.2)
+	taskResource.memAllocationCapacity = float64(4700)
+	taskResource.memAllocationUsed = float64(30)
+}
+
 // models the probe for a mesos master state , containing metadata about
 // all of the slaves
 type TaskProbe struct {
@@ -33,35 +40,37 @@ func (probe *TaskProbe) getPortsBought() {
 	portsTaskUses = make(map[string]util.PortUtil)
 	usedStr := probe.Task.Resources.Ports
 	glog.V(3).Infof("=========-------> used ports at container is %+v\n", usedStr)
-	portsStr := usedStr[1 : len(usedStr)-1]
-	glog.V(3).Infof("=========-------> used ports is %+v\n", portsStr)
-	portRanges := strings.Split(portsStr, ",")
-	for _, prange := range portRanges {
-		glog.V(3).Infof("=========-------> prange is %+v\n", prange)
-		ports := strings.Split(prange, "-")
-		glog.V(3).Infof("=========-------> port is %+v\n", ports[0])
-		portStart, err := strconv.Atoi(strings.Trim(ports[0], " "))
-		if err != nil {
-			glog.V(3).Infof(" Error: %+v", err)
-		}
-		if strings.Trim(ports[0], " ") == strings.Trim(ports[1], " ") {
-			// ports used by Task
-			portsTaskUses[strings.Trim(ports[0], " ")] = util.PortUtil{
-				Number:   float64(portStart),
-				Capacity: float64(1.0),
-				Used:     float64(1.0),
+	if len(usedStr) > 0 {
+		portsStr := usedStr[1 : len(usedStr)-1]
+		glog.V(3).Infof("=========-------> used ports is %+v\n", portsStr)
+		portRanges := strings.Split(portsStr, ",")
+		for _, prange := range portRanges {
+			glog.V(3).Infof("=========-------> prange is %+v\n", prange)
+			ports := strings.Split(prange, "-")
+			glog.V(3).Infof("=========-------> port is %+v\n", ports[0])
+			portStart, err := strconv.Atoi(strings.Trim(ports[0], " "))
+			if err != nil {
+				glog.V(3).Infof(" Error: %+v", err)
 			}
-		} else {
-			//range from port start to end
-			for _, p := range ports {
-				port, err := strconv.Atoi(p)
-				if err != nil {
-					glog.V(3).Infof("Error getting used port. %+v\n", err)
-				}
-				portsTaskUses[strings.Trim(p, " ")] = util.PortUtil{
-					Number:   float64(port),
+			if strings.Trim(ports[0], " ") == strings.Trim(ports[1], " ") {
+				// ports used by Task
+				portsTaskUses[strings.Trim(ports[0], " ")] = util.PortUtil{
+					Number:   float64(portStart),
 					Capacity: float64(1.0),
 					Used:     float64(1.0),
+				}
+			} else {
+				//range from port start to end
+				for _, p := range ports {
+					port, err := strconv.Atoi(p)
+					if err != nil {
+						glog.V(3).Infof("Error getting used port. %+v\n", err)
+					}
+					portsTaskUses[strings.Trim(p, " ")] = util.PortUtil{
+						Number:   float64(port),
+						Capacity: float64(1.0),
+						Used:     float64(1.0),
+					}
 				}
 			}
 		}
